@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Quiz Cache</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #1e88e5;
+    }
+    .button {
+      display: inline-block;
+      background-color: #1e88e5;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      text-decoration: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #005cb2;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 4px;
+      display: none;
+    }
+    .success {
+      background-color: #e8f5e9;
+      border: 1px solid #4caf50;
+      color: #2e7d32;
+    }
+    .error {
+      background-color: #ffebee;
+      border: 1px solid #f44336;
+      color: #c62828;
+    }
+    pre {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Clear Quiz Cache</h1>
+  <p>
+    This page will clear the cached quiz questions from your browser's localStorage.
+    This is useful if you're seeing the wrong quiz questions (personal questions about mom instead of creative writing questions).
+  </p>
+  <p>
+    After clearing the cache, you'll need to refresh the main application page to see the updated quiz questions.
+  </p>
+  
+  <button id="clearCache" class="button">Clear Quiz Cache</button>
+  
+  <div id="result"></div>
+  
+  <script>
+    document.getElementById('clearCache').addEventListener('click', function() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+      resultDiv.className = '';
+      resultDiv.style.display = 'block';
+      
+      try {
+        // Check if localStorage is available
+        if (typeof localStorage !== 'undefined') {
+          // Remove the quiz state from localStorage
+          localStorage.removeItem('mothers-day-quiz');
+          
+          // Log success
+          resultDiv.className = 'success';
+          resultDiv.innerHTML = `
+            <p><strong>Success!</strong> Quiz cache has been cleared from localStorage.</p>
+            <p>Please <a href="/" style="color: #2e7d32; font-weight: bold;">return to the main page</a> and refresh to see the updated quiz questions.</p>
+          `;
+        } else {
+          throw new Error("localStorage is not available in this environment.");
+        }
+        
+        // Also clear any other potential caches
+        if (typeof caches !== 'undefined') {
+          caches.keys().then(cacheNames => {
+            let cacheResults = '<p>Additional caches cleared:</p><ul>';
+            if (cacheNames.length === 0) {
+              cacheResults += '<li>No additional caches found.</li>';
+            } else {
+              cacheNames.forEach(cacheName => {
+                caches.delete(cacheName);
+                cacheResults += `<li>Cache '${cacheName}' deleted.</li>`;
+              });
+            }
+            cacheResults += '</ul>';
+            resultDiv.innerHTML += cacheResults;
+          }).catch(error => {
+            resultDiv.innerHTML += `<p>Error clearing additional caches: ${error.message}</p>`;
+          });
+        }
+      } catch (error) {
+        // Log error
+        resultDiv.className = 'error';
+        resultDiv.innerHTML = `
+          <p><strong>Error:</strong> ${error.message}</p>
+          <p>Please try clearing the cache manually:</p>
+          <ol>
+            <li>Open browser DevTools (F12 or right-click → Inspect)</li>
+            <li>Go to the "Application" tab</li>
+            <li>Select "Local Storage" in the left sidebar</li>
+            <li>Find and delete the entry named "mothers-day-quiz"</li>
+            <li>Refresh the main page</li>
+          </ol>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
